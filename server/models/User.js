@@ -9,6 +9,7 @@ const UserSchema = new mongoose.Schema({
     trim: true,
     maxlength: [50, 'Name cannot be more than 50 characters']
   },
+
   email: {
     type: String,
     required: [true, 'Please add an email'],
@@ -18,50 +19,83 @@ const UserSchema = new mongoose.Schema({
       'Please add a valid email'
     ]
   },
+
   password: {
     type: String,
     required: [true, 'Please add a password'],
     minlength: [6, 'Password must be at least 6 characters'],
     select: false
   },
+
+  // ✅ Native Language (ENUM + REQUIRED)
   nativeLanguage: {
     type: String,
-    required: false
+    required: [true, 'Please select your native language'],
+    enum: [
+      "English",
+      "Hindi",
+      "Bengali",
+      "Spanish",
+      "French",
+      "German",
+      "Chinese",
+      "Japanese"
+    ]
   },
+
+  // ✅ Target Language (ENUM + REQUIRED)
   targetLanguage: {
     type: String,
-    required: false
+    required: [true, 'Please select your target language'],
+    enum: [
+      "English",
+      "Hindi",
+      "Bengali",
+      "Spanish",
+      "French",
+      "German",
+      "Chinese",
+      "Japanese"
+    ]
   },
+
   proficiencyLevel: {
     type: String,
     enum: ['beginner', 'intermediate', 'advanced'],
     default: 'beginner'
   },
+
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
 
-// Encrypt password using bcrypt
-UserSchema.pre('save', async function(next) {
+// 🔐 Encrypt password before saving
+UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
-    next();
+    return next(); // ✅ important fix
   }
 
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+
+  next();
 });
 
-// Sign JWT and return
-UserSchema.methods.getSignedJwtToken = function() {
-  return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE
-  });
+// 🔑 Generate JWT token
+UserSchema.methods.getSignedJwtToken = function () {
+  return jwt.sign(
+    { id: this._id },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: process.env.JWT_EXPIRATION || '7d' // ✅ safe fallback
+    }
+  );
 };
 
-// Match user entered password to hashed password in database
-UserSchema.methods.matchPassword = async function(enteredPassword) {
+// 🔍 Compare password
+UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 

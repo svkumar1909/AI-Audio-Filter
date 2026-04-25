@@ -11,10 +11,17 @@ const RegisterPage = () => {
     nativeLanguage: '',
     targetLanguage: ''
   });
+
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  const LANGUAGES = [
+    "English", "Hindi", "Bengali",
+    "Spanish", "French", "German",
+    "Chinese", "Japanese"
+  ];
 
   const handleChange = (e) => {
     setFormData({
@@ -26,7 +33,7 @@ const RegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     if (formData.password !== formData.confirmPassword) {
       return setError('Passwords do not match');
     }
@@ -35,8 +42,13 @@ const RegisterPage = () => {
       return setError('Password must be at least 6 characters');
     }
 
+    if (formData.nativeLanguage === formData.targetLanguage) {
+      return setError('Native and target language cannot be the same');
+    }
+
     try {
       setIsLoading(true);
+
       await register({
         name: formData.name,
         email: formData.email,
@@ -44,10 +56,22 @@ const RegisterPage = () => {
         nativeLanguage: formData.nativeLanguage,
         targetLanguage: formData.targetLanguage
       });
+
+      // ✅ SUCCESS FLOW
       navigate('/dashboard');
+
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      console.log("REGISTER ERROR:", err);
+
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "Registration failed. Please try again.";
+
+      setError(errorMessage);
+
     } finally {
+      // ✅ FIX: missing finally was breaking build earlier
       setIsLoading(false);
     }
   };
@@ -58,107 +82,39 @@ const RegisterPage = () => {
         <h1 className="text-2xl font-bold mb-6 text-center">Create Account</h1>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-red-100 text-red-700 px-4 py-3 rounded mb-4">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="name">Name</label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
-          </div>
 
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="email">Email</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
+          <input name="name" placeholder="Name" value={formData.name} onChange={handleChange} className="w-full mb-3 p-2 border rounded" required />
 
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="nativeLanguage">Native Language</label>
-            <input
-              id="nativeLanguage"
-              name="nativeLanguage"
-              type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={formData.nativeLanguage}
-              onChange={handleChange}
-              required
-            />
-          </div>
+          <input name="email" type="email" placeholder="Email" value={formData.email} onChange={handleChange} className="w-full mb-3 p-2 border rounded" required />
 
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="targetLanguage">Target Language</label>
-            <input
-              id="targetLanguage"
-              name="targetLanguage"
-              type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={formData.targetLanguage}
-              onChange={handleChange}
-              required
-            />
-          </div>
+          <select name="nativeLanguage" value={formData.nativeLanguage} onChange={handleChange} className="w-full mb-3 p-2 border rounded" required>
+            <option value="">Native Language</option>
+            {LANGUAGES.map(l => <option key={l}>{l}</option>)}
+          </select>
 
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="password">Password</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
+          <select name="targetLanguage" value={formData.targetLanguage} onChange={handleChange} className="w-full mb-3 p-2 border rounded" required>
+            <option value="">Target Language</option>
+            {LANGUAGES.map(l => <option key={l}>{l}</option>)}
+          </select>
 
-          <div className="mb-6">
-            <label className="block text-gray-700 mb-2" htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-            />
-          </div>
+          <input name="password" type="password" placeholder="Password" value={formData.password} onChange={handleChange} className="w-full mb-3 p-2 border rounded" required />
 
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition"
-            disabled={isLoading}
-          >
+          <input name="confirmPassword" type="password" placeholder="Confirm Password" value={formData.confirmPassword} onChange={handleChange} className="w-full mb-4 p-2 border rounded" required />
+
+          <button className="w-full bg-blue-500 text-white py-2 rounded">
             {isLoading ? 'Registering...' : 'Register'}
           </button>
         </form>
 
-        <div className="mt-4 text-center">
-          <p>
-            Already have an account?{' '}
-            <Link to="/login" className="text-blue-500 hover:text-blue-700">
-              Log in
-            </Link>
-          </p>
-        </div>
+        <p className="mt-4 text-center">
+          Already have an account? <Link to="/login" className="text-blue-500">Login</Link>
+        </p>
       </div>
     </div>
   );

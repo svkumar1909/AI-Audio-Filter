@@ -1,10 +1,10 @@
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { 
-  loginUser, 
-  registerUser, 
-  getCurrentUser as verifyToken, // Using getCurrentUser as verifyToken
-  logoutUser 
+import {
+  loginUser,
+  registerUser,
+  getCurrentUser as verifyToken,
+  logoutUser
 } from '../services/authService';
 
 export const useAuth = () => {
@@ -34,11 +34,13 @@ export const useAuth = () => {
   const login = async (email, password) => {
     setLoading(true);
     try {
-      const { user, token } = await loginUser(email, password);
-      localStorage.setItem('token', token);
-      setUser(user);
+      const response = await loginUser(email, password);
+
+      localStorage.setItem('token', response.token);
+      setUser(response.user);
       setError(null);
-      return user;
+
+      return response.user;
     } catch (err) {
       setError(err.message);
       throw err;
@@ -50,11 +52,13 @@ export const useAuth = () => {
   const register = async (userData) => {
     setLoading(true);
     try {
-      const { user, token } = await registerUser(userData);
-      localStorage.setItem('token', token);
-      setUser(user);
+      const response = await registerUser(userData);
+
+      localStorage.setItem('token', response.token);
+      setUser(response.user);
       setError(null);
-      return user;
+
+      return response.user;
     } catch (err) {
       setError(err.message);
       throw err;
@@ -66,7 +70,7 @@ export const useAuth = () => {
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
-    logoutUser(); // Call the API logout function
+    logoutUser();
   };
 
   return {

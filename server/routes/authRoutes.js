@@ -33,7 +33,7 @@ router.post(
 // @route   GET /api/auth
 // @desc    Get authenticated user
 // @access  Private
-router.get('/', protect, authController.getMe);
+router.get('/me', protect, authController.getMe);
 
 // @route   POST /api/auth/forgot-password
 // @desc    Request password reset

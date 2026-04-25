@@ -1,8 +1,9 @@
 import asyncHandler from 'express-async-handler';
 import fs from 'fs';
-import path from 'path';
+import mongoose from 'mongoose';
 import Recording from '../models/Recording.js';
 import { processAudio } from '../services/audioProcessing.js';
+
 
 // @desc    Upload audio recording
 // @route   POST /api/audio
@@ -17,18 +18,16 @@ export const uploadAudio = asyncHandler(async (req, res) => {
 
   const { title, language, originalText } = req.body;
 
-  // Process the uploaded audio
   const audioDetails = await processAudio(req.file.path);
 
-  // Create recording in DB
   const recording = await Recording.create({
     user: req.user.id,
     title: title || `Recording ${Date.now()}`,
     filePath: req.file.path,
-    duration: audioDetails.duration,
-    language: language || req.user.targetLanguage || 'en',
+    duration: audioDetails?.duration || 0,
+    language: language || req.user.targetLanguage || 'English',
     originalText: originalText || '',
-    transcription: '' // Will be populated after AI processing
+    transcription: ''
   });
 
   res.status(201).json({
@@ -37,12 +36,18 @@ export const uploadAudio = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Get all recordings for a user
+
+// @desc    Get all recordings (with pagination)
 // @route   GET /api/audio
 // @access  Private
 export const getRecordings = asyncHandler(async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+
   const recordings = await Recording.find({ user: req.user.id })
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit);
 
   res.status(200).json({
     success: true,
@@ -51,10 +56,20 @@ export const getRecordings = asyncHandler(async (req, res) => {
   });
 });
 
+
 // @desc    Get single recording
 // @route   GET /api/audio/:id
 // @access  Private
 export const getRecording = asyncHandler(async (req, res) => {
+
+  // ✅ Prevent crash for invalid ObjectId
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid recording ID'
+    });
+  }
+
   const recording = await Recording.findById(req.params.id).populate('analyses');
 
   if (!recording) {
@@ -64,11 +79,10 @@ export const getRecording = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check recording belongs to user
   if (recording.user.toString() !== req.user.id) {
     return res.status(401).json({
       success: false,
-      message: 'Not authorized to access this recording'
+      message: 'Not authorized'
     });
   }
 
@@ -78,10 +92,19 @@ export const getRecording = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Update recording details
+
+// @desc    Update recording
 // @route   PUT /api/audio/:id
 // @access  Private
 export const updateRecording = asyncHandler(async (req, res) => {
+
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid recording ID'
+    });
+  }
+
   let recording = await Recording.findById(req.params.id);
 
   if (!recording) {
@@ -91,18 +114,21 @@ export const updateRecording = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check recording belongs to user
   if (recording.user.toString() !== req.user.id) {
     return res.status(401).json({
       success: false,
-      message: 'Not authorized to update this recording'
+      message: 'Not authorized'
     });
   }
 
-  recording = await Recording.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true
-  });
+  recording = await Recording.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    {
+      new: true,
+      runValidators: true
+    }
+  );
 
   res.status(200).json({
     success: true,
@@ -110,10 +136,20 @@ export const updateRecording = asyncHandler(async (req, res) => {
   });
 });
 
+
 // @desc    Delete recording
 // @route   DELETE /api/audio/:id
 // @access  Private
 export const deleteRecording = asyncHandler(async (req, res) => {
+
+  // ✅ Prevent crash
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid recording ID'
+    });
+  }
+
   const recording = await Recording.findById(req.params.id);
 
   if (!recording) {
@@ -123,20 +159,18 @@ export const deleteRecording = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check recording belongs to user
   if (recording.user.toString() !== req.user.id) {
     return res.status(401).json({
       success: false,
-      message: 'Not authorized to delete this recording'
+      message: 'Not authorized'
     });
   }
 
-  // Delete file from server
-  if (fs.existsSync(recording.filePath)) {
+  // ✅ Delete file safely
+  if (recording.filePath && fs.existsSync(recording.filePath)) {
     fs.unlinkSync(recording.filePath);
   }
 
-  // Change from .remove() to deleteOne() as it's the modern approach in Mongoose
   await recording.deleteOne();
 
   res.status(200).json({

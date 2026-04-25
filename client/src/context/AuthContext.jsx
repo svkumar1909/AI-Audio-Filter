@@ -1,9 +1,9 @@
 import { createContext, useState, useEffect, useContext } from 'react';
-import { 
-  loginUser, 
-  registerUser, 
-  getCurrentUser, 
-  logoutUser 
+import {
+  loginUser,
+  registerUser,
+  getCurrentUser,
+  logoutUser
 } from '../services/authService';
 
 export const AuthContext = createContext();
@@ -13,17 +13,22 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // ✅ Initialize auth
   useEffect(() => {
     const initAuth = async () => {
       try {
         const token = localStorage.getItem('token');
+
         if (token) {
           const userData = await getCurrentUser();
-          setUser(userData.data); // ✅ unwrap `data` from backend
+
+          // ✅ FIX: backend returns user directly (not inside data)
+          setUser(userData);
         }
       } catch (err) {
-        console.error('Authentication error:', err);
+        console.error('Auth init error:', err);
         localStorage.removeItem('token');
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -32,14 +37,15 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
+  // ✅ LOGIN
   const login = async (email, password) => {
     setError(null);
     try {
-      const response = await loginUser(email, password);
-      const { token, user: userData } = response;
-      
+      const { token, user: userData } = await loginUser(email, password);
+
       localStorage.setItem('token', token);
       setUser(userData);
+
       return userData;
     } catch (err) {
       setError(err.message || 'Login failed');
@@ -47,14 +53,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (userData) => { // ✅ accept full object
+  // ✅ REGISTER
+  const register = async (userData) => {
     setError(null);
     try {
-      const response = await registerUser(userData);
-      const { token, user: registeredUser } = response;
-      
+      const { token, user: registeredUser } = await registerUser(userData);
+
       localStorage.setItem('token', token);
       setUser(registeredUser);
+
       return registeredUser;
     } catch (err) {
       setError(err.message || 'Registration failed');
@@ -62,19 +69,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // ✅ LOGOUT
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
-    logoutUser(); // API call to invalidate the token on the server
+    logoutUser();
   };
 
+  // ✅ REFRESH USER
   const refreshUserData = async () => {
     try {
       const userData = await getCurrentUser();
-      setUser(userData.data); // ✅ unwrap `data`
-      return userData.data;
+      setUser(userData); // ✅ FIXED
+      return userData;
     } catch (err) {
-      console.error('Error refreshing user data:', err);
+      console.error('Refresh error:', err);
       throw err;
     }
   };
@@ -83,6 +92,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
+        setUser, // ✅ IMPORTANT (fixes your earlier error)
         loading,
         error,
         login,
@@ -97,25 +107,13 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export default AuthProvider;
-
-// Custom hook
+// ✅ Custom Hook
 export const useAuth = () => {
   const context = useContext(AuthContext);
+
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth must be used within AuthProvider');
   }
-  
-  const { user, loading, error, login, register, logout, refreshUserData } = context;
-  
-  return {
-    currentUser: user, // frontend components expect currentUser
-    loading,
-    error,
-    login,
-    register,
-    logout,
-    refreshUserData,
-    isAuthenticated: !!user
-  };
+
+  return context;
 };

@@ -1,34 +1,52 @@
 import api from './api';
 
+// ✅ LOGIN
 export const loginUser = async (email, password) => {
   const response = await api.post('/auth/login', { email, password });
-  return response.data;
+
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Login failed");
+  }
+
+  return {
+    user: response.data.user,
+    token: response.data.token
+  };
 };
 
+// ✅ REGISTER
 export const registerUser = async (userData) => {
   const response = await api.post('/auth/register', userData);
-  return response.data;
+
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Registration failed");
+  }
+
+  return {
+    user: response.data.user,
+    token: response.data.token
+  };
 };
 
+// ✅ GET CURRENT USER
 export const getCurrentUser = async () => {
   const response = await api.get('/auth/me');
   return response.data;
 };
 
-export const logoutUser = async () => {
-  try {
-    await api.post('/auth/logout');
-  } catch (err) {
-    console.error('Logout error:', err);
-  }
+// ✅ LOGOUT (FIXED - NO API CALL)
+export const logoutUser = () => {
+  // JWT आधारित logout → सिर्फ token हटाना
+  console.log("User logged out");
 };
 
+// ✅ UPDATE PROFILE
 export const updateProfile = async (userData) => {
   const response = await api.put('/users/me', userData);
   return response.data;
 };
 
-// ✅ Add this to fix your SettingsPage import
+// ✅ CHANGE PASSWORD
 export const changePassword = async (currentPassword, newPassword) => {
   const response = await api.put('/auth/change-password', {
     currentPassword,
