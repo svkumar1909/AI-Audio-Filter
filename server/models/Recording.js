@@ -6,50 +6,55 @@ const RecordingSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+
   title: {
     type: String,
-    required: [true, 'Please add a title'],
     trim: true,
-    maxlength: [100, 'Title cannot be more than 100 characters']
+    maxlength: 100
   },
+
   filePath: {
     type: String,
-    required: [true, 'Audio file path is required']
+    required: true
   },
-  duration: {
-    type: Number,
-    required: false
-  },
+
+  duration: Number,
+
   language: {
     type: String,
-    required: [true, 'Language is required']
+    default: 'en-US'
   },
+
+  // 🎤 What user said
   transcription: {
     type: String,
-    required: false
+    default: ''
   },
+
+  // 🎯 What user should say
   originalText: {
     type: String,
-    required: false,
-    description: 'The text that user was trying to pronounce, if available'
+    default: ''
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
+
+  // 📊 Scores
+  overallScore: {
+    type: Number,
+    default: 0
+  },
+
+  accuracy: {
+    type: Number,
+    default: 0
+  },
+
+  fluency: {
+    type: Number,
+    default: 0
   }
+
 }, {
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true }
+  timestamps: true
 });
 
-// Virtual for analysis
-RecordingSchema.virtual('analyses', {
-  ref: 'Analysis',
-  localField: '_id',
-  foreignField: 'recording',
-  justOne: false
-});
-
-const Recording = mongoose.model('Recording', RecordingSchema);
-
-export default Recording;
+export default mongoose.model('Recording', RecordingSchema);

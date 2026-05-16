@@ -1,14 +1,12 @@
 import asyncHandler from 'express-async-handler';
-import fs from 'fs';
-import mongoose from 'mongoose';
 import Recording from '../models/Recording.js';
 import { processAudio } from '../services/audioProcessing.js';
+import { speechToText } from '../services/aiService.js';
+import { analyzePronunciation } from '../services/analysisService.js';
 
-
-// @desc    Upload audio recording
-// @route   POST /api/audio
-// @access  Private
+// 🎤 Upload + analyze
 export const uploadAudio = asyncHandler(async (req, res) => {
+
   if (!req.file) {
     return res.status(400).json({
       success: false,
@@ -16,165 +14,56 @@ export const uploadAudio = asyncHandler(async (req, res) => {
     });
   }
 
-  const { title, language, originalText } = req.body;
+  const { originalText, language } = req.body;
 
   const audioDetails = await processAudio(req.file.path);
+  const audioPath = audioDetails.filePath;
+
+  // 🧠 Speech → text
+  const speechResult = await speechToText(audioPath, language || 'en-US');
+  const transcription = speechResult.text || '';
+
+  // 🎯 Score
+  const score = analyzePronunciation(
+    transcription,
+    originalText,
+    audioDetails.duration
+  );
 
   const recording = await Recording.create({
     user: req.user.id,
-    title: title || `Recording ${Date.now()}`,
-    filePath: req.file.path,
-    duration: audioDetails?.duration || 0,
-    language: language || req.user.targetLanguage || 'English',
-    originalText: originalText || '',
-    transcription: ''
+    filePath: audioPath,
+    duration: audioDetails.duration,
+    language: language || 'en-US',
+
+    originalText,
+    transcription,
+
+    accuracy: score.accuracy,
+    fluency: score.fluency,
+    overallScore: score.overallScore
   });
 
   res.status(201).json({
     success: true,
-    data: recording
+    data: {
+      ...recording.toObject(),
+      wordLevelFeedback: score.wordLevelFeedback,
+      improvementSuggestions: score.improvementSuggestions,
+      pronunciationMessage: score.pronunciationMessage
+    }
   });
 });
 
 
-// @desc    Get all recordings (with pagination)
-// @route   GET /api/audio
-// @access  Private
+// 📊 GET recordings (FIXED)
 export const getRecordings = asyncHandler(async (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
 
   const recordings = await Recording.find({ user: req.user.id })
-    .sort({ createdAt: -1 })
-    .skip((page - 1) * limit)
-    .limit(limit);
+    .sort({ createdAt: -1 });
 
   res.status(200).json({
     success: true,
-    count: recordings.length,
     data: recordings
-  });
-});
-
-
-// @desc    Get single recording
-// @route   GET /api/audio/:id
-// @access  Private
-export const getRecording = asyncHandler(async (req, res) => {
-
-  // ✅ Prevent crash for invalid ObjectId
-  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Invalid recording ID'
-    });
-  }
-
-  const recording = await Recording.findById(req.params.id).populate('analyses');
-
-  if (!recording) {
-    return res.status(404).json({
-      success: false,
-      message: 'Recording not found'
-    });
-  }
-
-  if (recording.user.toString() !== req.user.id) {
-    return res.status(401).json({
-      success: false,
-      message: 'Not authorized'
-    });
-  }
-
-  res.status(200).json({
-    success: true,
-    data: recording
-  });
-});
-
-
-// @desc    Update recording
-// @route   PUT /api/audio/:id
-// @access  Private
-export const updateRecording = asyncHandler(async (req, res) => {
-
-  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Invalid recording ID'
-    });
-  }
-
-  let recording = await Recording.findById(req.params.id);
-
-  if (!recording) {
-    return res.status(404).json({
-      success: false,
-      message: 'Recording not found'
-    });
-  }
-
-  if (recording.user.toString() !== req.user.id) {
-    return res.status(401).json({
-      success: false,
-      message: 'Not authorized'
-    });
-  }
-
-  recording = await Recording.findByIdAndUpdate(
-    req.params.id,
-    req.body,
-    {
-      new: true,
-      runValidators: true
-    }
-  );
-
-  res.status(200).json({
-    success: true,
-    data: recording
-  });
-});
-
-
-// @desc    Delete recording
-// @route   DELETE /api/audio/:id
-// @access  Private
-export const deleteRecording = asyncHandler(async (req, res) => {
-
-  // ✅ Prevent crash
-  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Invalid recording ID'
-    });
-  }
-
-  const recording = await Recording.findById(req.params.id);
-
-  if (!recording) {
-    return res.status(404).json({
-      success: false,
-      message: 'Recording not found'
-    });
-  }
-
-  if (recording.user.toString() !== req.user.id) {
-    return res.status(401).json({
-      success: false,
-      message: 'Not authorized'
-    });
-  }
-
-  // ✅ Delete file safely
-  if (recording.filePath && fs.existsSync(recording.filePath)) {
-    fs.unlinkSync(recording.filePath);
-  }
-
-  await recording.deleteOne();
-
-  res.status(200).json({
-    success: true,
-    data: {}
   });
 });
