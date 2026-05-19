@@ -1,307 +1,835 @@
 import { Link } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
-import { useAuth } from '../context/AuthContext';
+
+import {
+  motion
+} from 'framer-motion';
+
+import {
+  FaMicrophoneAlt,
+  FaBrain,
+  FaChartLine,
+  FaGlobe,
+  FaStar,
+  FaCheckCircle,
+  FaRocket,
+  FaShieldAlt,
+  FaHeadphones
+} from 'react-icons/fa';
+
+import {
+  useAuth
+} from '../context/AuthContext';
 
 function HomePage() {
-  const { currentUser } = useAuth();
-  const slideRef = useRef(null);
-  const currentIndex = useRef(0);
 
-  useEffect(() => {
-    const totalSlides = slideRef.current.children.length;
+  const {
+    currentUser
+  } = useAuth();
 
-    const interval = setInterval(() => {
-      currentIndex.current = (currentIndex.current + 1) % totalSlides;
-      const offset = currentIndex.current * -100;
+  const features = [
 
-      slideRef.current.style.transform = `translateX(${offset}%)`;
-    }, 4000); 
+    {
+      icon: <FaMicrophoneAlt />,
+      title: 'Real-Time Voice Recording',
+      desc: 'Capture your pronunciation instantly using advanced audio recording.'
+    },
 
-    return () => clearInterval(interval);
-  }, []);
+    {
+      icon: <FaBrain />,
+      title: 'AI Speech Analysis',
+      desc: 'Our AI evaluates pronunciation, fluency, and speaking confidence.'
+    },
+
+    {
+      icon: <FaChartLine />,
+      title: 'Track Progress',
+      desc: 'Visualize your improvement journey through analytics and scoring.'
+    },
+
+    {
+      icon: <FaGlobe />,
+      title: 'Multi Language Practice',
+      desc: 'Practice speaking confidently in multiple languages.'
+    }
+  ];
+
+  const testimonials = [
+
+    {
+      name: 'Sarah Johnson',
+      role: 'English Learner',
+      image:
+        'https://randomuser.me/api/portraits/women/44.jpg',
+
+      quote:
+        'This AI platform completely transformed my pronunciation confidence.'
+    },
+
+    {
+      name: 'Miguel Rodriguez',
+      role: 'Business Professional',
+      image:
+        'https://randomuser.me/api/portraits/men/32.jpg',
+
+      quote:
+        'The real-time pronunciation analysis feels futuristic and incredibly useful.'
+    },
+
+    {
+      name: 'Yuki Tanaka',
+      role: 'Student',
+      image:
+        'https://randomuser.me/api/portraits/women/68.jpg',
+
+      quote:
+        'The dashboard and progress tracking motivated me to practice daily.'
+    }
+  ];
 
   return (
-    <div className="bg-white">
 
-      {/* Hero Slider with Marquee */}
-      <section id="hero" className="relative w-full h-screen overflow-hidden text-white bg-black">
-        {/* Slides */}
-        <div
-          id="heroSlides"
-          ref={slideRef}
-          className="absolute inset-0 flex transition-transform duration-[2000ms] ease-out"
-        >
-          {[
-            {
-              image: "/img1.jpg",
-              heading: "SPEAK CLEARLY"
-            },
-            {
-              image: "/img2.jpg",
-              heading: "SOUND CONFIDENT"
-            },
-            {
-              image: "/img3.jpg",
-              heading: "BE UNDERSTOOD"
-            },
-            {
-              image: "/microphone.jpg",
-              heading: "BE LOUD"
-            }
-          ].map((slide, index) => (
-            <div
-              key={index}
-              className="w-full h-screen flex-shrink-0 bg-cover bg-center relative flex items-center justify-center"
-              style={{ backgroundImage: `url(${slide.image})` }}
+    <div className="relative overflow-hidden">
+
+      {/* HERO */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+
+        {/* BACKGROUND GLOW */}
+        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"></div>
+
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"></div>
+
+        <div className="absolute top-1/2 left-1/2 w-[35rem] h-[35rem] bg-pink-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6 py-24">
+
+          <div className="grid lg:grid-cols-2 gap-20 items-center">
+
+            {/* LEFT */}
+            <motion.div
+              initial={{
+                opacity: 0,
+                y: 50
+              }}
+              animate={{
+                opacity: 1,
+                y: 0
+              }}
+              transition={{
+                duration: 0.8
+              }}
             >
-              <h2 className="text-4xl md:text-6xl font-extrabold text-white animate-slideIn backdrop-blur-md bg-black/40 px-6 py-4 rounded">
-                {slide.heading}
-              </h2>
-            </div>
-          ))}
-        </div>
 
-        {/* Marquee heading */}
-        <div className="absolute top-10 left-0 w-full overflow-hidden z-10">
-          <h1 className="marquee text-3xl md:text-5xl font-extrabold text-white opacity-20 uppercase whitespace-nowrap">
-            &nbsp;Perfect Pronunciation • Perfect Pronunciation • Perfect Pronunciation •
-          </h1>
-        </div>
-      </section>
+              <div className="inline-flex items-center gap-3 glass px-5 py-3 rounded-full shadow-xl mb-8">
 
-      {/* CTA Hero Section */}
-      <div className="relative bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 overflow-hidden mt-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
-          <div className="md:flex md:items-center md:justify-between gap-10">
-            <div className="md:w-1/2 text-center md:text-left">
-              <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl leading-tight drop-shadow-md">
-                Perfect Your Pronunciation with AI
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+
+                <span className="font-semibold text-gray-700">
+
+                  AI Powered Pronunciation Platform
+
+                </span>
+
+              </div>
+
+              <h1 className="text-6xl lg:text-8xl font-extrabold leading-tight mb-8">
+
+                Speak With
+
+                <span className="gradient-text block">
+
+                  Confidence
+
+                </span>
+
               </h1>
-              <p className="mt-6 max-w-xl text-lg text-indigo-100 md:text-xl">
-                Get instant feedback on your pronunciation using our advanced AI technology. Practice and improve your accent for any language in real-time.
+
+              <p className="text-xl text-gray-600 leading-relaxed mb-10 max-w-2xl">
+
+                Improve pronunciation using AI-powered speech analysis,
+                instant feedback, fluency scoring, and smart voice evaluation.
+
               </p>
-              <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+
+              <div className="flex flex-wrap gap-5">
+
                 {currentUser ? (
+
                   <Link
                     to="/practice"
-                    className="bg-white text-indigo-700 hover:bg-indigo-50 px-6 py-3 rounded-lg text-lg font-semibold shadow-md transition duration-300"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl text-lg font-bold shadow-2xl hover:scale-105 transition-all duration-300"
                   >
+
                     Start Practicing
+
                   </Link>
+
                 ) : (
+
                   <>
+
                     <Link
                       to="/register"
-                      className="bg-white text-indigo-700 hover:bg-indigo-50 px-6 py-3 rounded-lg text-lg font-semibold shadow-md transition duration-300"
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl text-lg font-bold shadow-2xl hover:scale-105 transition-all duration-300"
                     >
-                      Try For Free
+
+                      Get Started Free
+
                     </Link>
+
                     <Link
                       to="/login"
-                      className="bg-transparent border border-white text-white hover:bg-white hover:text-indigo-700 px-6 py-3 rounded-lg text-lg font-semibold transition duration-300"
+                      className="glass px-8 py-4 rounded-2xl text-lg font-bold hover:scale-105 transition-all duration-300"
                     >
-                      Log In
+
+                      Login
+
                     </Link>
+
                   </>
                 )}
+
               </div>
-            </div>
 
-            <div className="mt-12 md:mt-0 md:w-1/2 flex justify-center md:justify-end">
-              <img
-                className="w-full max-w-md rounded-xl shadow-2xl ring-1 ring-white/10"
-                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQsn_VImzLySeENxVU0j7bUmny4FtKOSiYYQ&s"
-                alt="Person speaking into microphone"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+            </motion.div>
 
-      {/* Features Section */}
-      <div className="py-20 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl drop-shadow-md">
-              How It Works
-            </h2>
-            <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-700">
-              Improve your pronunciation in three simple steps
-            </p>
-          </div>
+            {/* RIGHT */}
+            <motion.div
+              initial={{
+                opacity: 0,
+                scale: 0.8
+              }}
+              animate={{
+                opacity: 1,
+                scale: 1
+              }}
+              transition={{
+                duration: 1
+              }}
+              className="relative flex justify-center"
+            >
 
-          <div className="mt-16 grid gap-10 md:grid-cols-3">
-            {[
-              {
-                step: 1,
-                title: "Record Your Voice",
-                description:
-                  "Use our recorder to capture your pronunciation of words and phrases.",
-                color: "from-blue-100 to-blue-200",
-              },
-              {
-                step: 2,
-                title: "Get AI Analysis",
-                description:
-                  "Our AI technology instantly analyzes your pronunciation and identifies areas for improvement.",
-                color: "from-purple-100 to-purple-200",
-              },
-              {
-                step: 3,
-                title: "Practice & Improve",
-                description:
-                  "Follow our feedback to practice and track your improvement over time.",
-                color: "from-pink-100 to-pink-200",
-              },
-            ].map((item) => (
-              <div
-                key={item.step}
-                className={`bg-gradient-to-br ${item.color} p-6 rounded-xl shadow-xl transform transition duration-300 hover:scale-105`}
+              <motion.div
+                animate={{
+                  y: [0, -15, 0]
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity
+                }}
+                className="premium-card p-10 w-full max-w-lg"
               >
-                <div className="w-14 h-14 bg-white text-indigo-600 rounded-full flex items-center justify-center text-xl font-bold shadow mb-4">
-                  {item.step}
+
+                <div className="flex justify-center mb-10">
+
+                  <div className="w-44 h-44 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center shadow-[0_20px_60px_rgba(99,102,241,0.4)] glow-animation">
+
+                    <FaMicrophoneAlt className="text-white text-7xl" />
+
+                  </div>
+
                 </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                  {item.title}
-                </h3>
-                <p className="text-gray-700">{item.description}</p>
-              </div>
-            ))}
+
+                <div className="space-y-4">
+
+                  <div className="h-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse"></div>
+
+                  <div className="h-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full w-5/6 animate-pulse"></div>
+
+                  <div className="h-4 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full w-4/6 animate-pulse"></div>
+
+                </div>
+
+                <div className="mt-10 grid grid-cols-3 gap-5">
+
+                  <div className="glass rounded-2xl p-4 text-center">
+
+                    <h3 className="text-3xl font-bold text-blue-600">
+                      95%
+                    </h3>
+
+                    <p className="text-gray-500">
+                      Accuracy
+                    </p>
+
+                  </div>
+
+                  <div className="glass rounded-2xl p-4 text-center">
+
+                    <h3 className="text-3xl font-bold text-purple-600">
+                      92%
+                    </h3>
+
+                    <p className="text-gray-500">
+                      Fluency
+                    </p>
+
+                  </div>
+
+                  <div className="glass rounded-2xl p-4 text-center">
+
+                    <h3 className="text-3xl font-bold text-pink-600">
+                      AI
+                    </h3>
+
+                    <p className="text-gray-500">
+                      Powered
+                    </p>
+
+                  </div>
+
+                </div>
+
+              </motion.div>
+
+            </motion.div>
+
           </div>
+
         </div>
-      </div>
 
-      {/* Testimonials */}
-      <div className="py-20 bg-gradient-to-b from-white via-gray-50 to-blue-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-              What Our Users Say
-            </h2>
-            <p className="mt-4 text-lg text-gray-600">
-              Real feedback from learners and professionals around the world
-            </p>
-          </div>
+      </section>
 
-          <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Testimonials */}
+      {/* STATS */}
+      <section className="py-24">
+
+        <div className="max-w-7xl mx-auto px-6">
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+
             {[
               {
-                name: "Sarah K.",
-                role: "English Learner",
-                quote: "This app has been a game-changer for my English pronunciation. The instant feedback helps me correct mistakes I didn't even know I was making.",
-                image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQHuCdtJJv3lG7XypPIxwSOELkfHlU9fsVhiQ&s"
+                value: '10K+',
+                label: 'Practice Sessions'
               },
               {
-                name: "Miguel R.",
-                role: "Spanish Teacher",
-                quote: "I recommend this tool to all my students. It gives them the confidence to practice on their own and come to class better prepared.",
-                image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHQzIZOf1MpDcmljz8RxelTDgOm_X6YPlD0w&s"
+                value: '95%',
+                label: 'AI Accuracy'
               },
               {
-                name: "Yuki T.",
-                role: "Business Professional",
-                quote: "Preparing for international presentations became so much easier with this app. My confidence in speaking English has improved significantly.",
-                image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfJBmWMJVSiA2JRayIg2cbEJRleGQgFlfcEQ&s"
+                value: '50+',
+                label: 'Countries'
+              },
+              {
+                value: '24/7',
+                label: 'AI Availability'
               }
-            ].map((user, index) => (
-              <div
+            ].map((item, index) => (
+
+              <motion.div
                 key={index}
-                className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300"
+                whileHover={{
+                  y: -10,
+                  scale: 1.03
+                }}
+                className="premium-card p-10 text-center"
               >
-                <div className="flex items-center mb-4">
+
+                <h2 className="text-6xl font-extrabold gradient-text mb-4">
+
+                  {item.value}
+
+                </h2>
+
+                <p className="text-gray-500 text-xl">
+
+                  {item.label}
+
+                </p>
+
+              </motion.div>
+            ))}
+
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* FEATURES */}
+      <section className="py-28">
+
+        <div className="max-w-7xl mx-auto px-6">
+
+          <div className="text-center mb-20">
+
+            <h2 className="text-5xl font-extrabold mb-6">
+
+              Why Choose SpeakRight AI
+
+            </h2>
+
+            <p className="text-xl text-gray-500 max-w-3xl mx-auto">
+
+              Experience advanced pronunciation training powered by artificial intelligence.
+
+            </p>
+
+          </div>
+
+          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-8">
+
+            {features.map((feature, index) => (
+
+              <motion.div
+                key={index}
+                whileHover={{
+                  y: -10,
+                  scale: 1.03
+                }}
+                className="premium-card p-8"
+              >
+
+                <div className="w-20 h-20 rounded-3xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white text-3xl mb-8 shadow-2xl">
+
+                  {feature.icon}
+
+                </div>
+
+                <h3 className="text-2xl font-bold mb-4">
+
+                  {feature.title}
+
+                </h3>
+
+                <p className="text-gray-500 leading-relaxed">
+
+                  {feature.desc}
+
+                </p>
+
+              </motion.div>
+            ))}
+
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* EXTRA BENEFITS */}
+      <section className="py-28">
+
+        <div className="max-w-7xl mx-auto px-6">
+
+          <div className="text-center mb-20">
+
+            <h2 className="text-5xl font-extrabold mb-6">
+
+              Premium AI Experience
+
+            </h2>
+
+            <p className="text-xl text-gray-500">
+
+              Everything you need to master pronunciation
+
+            </p>
+
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-10">
+
+            {[
+              {
+                icon: <FaRocket />,
+                title: 'Fast AI Processing',
+                desc: 'Instant analysis with lightning-fast AI response.'
+              },
+              {
+                icon: <FaShieldAlt />,
+                title: 'Secure Storage',
+                desc: 'Your recordings are stored safely and securely.'
+              },
+              {
+                icon: <FaHeadphones />,
+                title: 'Smart Audio Analysis',
+                desc: 'Detailed speech breakdown with intelligent suggestions.'
+              }
+            ].map((item, index) => (
+
+              <motion.div
+                key={index}
+                whileHover={{
+                  y: -10
+                }}
+                className="premium-card p-10 text-center"
+              >
+
+                <div className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white text-4xl mx-auto mb-8">
+
+                  {item.icon}
+
+                </div>
+
+                <h3 className="text-3xl font-bold mb-5">
+
+                  {item.title}
+
+                </h3>
+
+                <p className="text-gray-500 text-lg leading-relaxed">
+
+                  {item.desc}
+
+                </p>
+
+              </motion.div>
+            ))}
+
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* DASHBOARD SHOWCASE */}
+      <section className="py-28">
+
+        <div className="max-w-7xl mx-auto px-6">
+
+          <div className="grid lg:grid-cols-2 gap-20 items-center">
+
+            <motion.div
+              initial={{
+                opacity: 0,
+                x: -50
+              }}
+              whileInView={{
+                opacity: 1,
+                x: 0
+              }}
+              transition={{
+                duration: 0.8
+              }}
+            >
+
+              <h2 className="text-6xl font-extrabold mb-8 leading-tight">
+
+                Powerful Analytics
+
+                <span className="gradient-text block">
+
+                  Smart Dashboard
+
+                </span>
+
+              </h2>
+
+              <p className="text-xl text-gray-500 leading-relaxed mb-10">
+
+                Track pronunciation progress, fluency scores, speaking consistency,
+                and AI-generated feedback.
+
+              </p>
+
+              <div className="space-y-6">
+
+                {[
+                  'AI pronunciation scoring',
+                  'Voice history tracking',
+                  'Real-time feedback',
+                  'Progress visualization'
+                ].map((point, index) => (
+
+                  <div
+                    key={index}
+                    className="glass rounded-2xl p-5 flex items-center gap-4"
+                  >
+
+                    <FaCheckCircle className="text-green-500 text-2xl" />
+
+                    <p className="text-lg font-semibold text-gray-700">
+
+                      {point}
+
+                    </p>
+
+                  </div>
+                ))}
+
+              </div>
+
+            </motion.div>
+
+            <motion.div
+              initial={{
+                opacity: 0,
+                x: 50
+              }}
+              whileInView={{
+                opacity: 1,
+                x: 0
+              }}
+              transition={{
+                duration: 0.8
+              }}
+            >
+
+              <div className="premium-card p-10">
+
+                <div className="space-y-5 mb-10">
+
+                  <div className="h-5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+
+                  <div className="h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full w-5/6"></div>
+
+                  <div className="h-5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full w-4/6"></div>
+
+                  <div className="h-5 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full w-3/6"></div>
+
+                </div>
+
+                <div className="grid grid-cols-2 gap-5">
+
+                  <div className="glass rounded-2xl p-5 text-center">
+
+                    <h4 className="text-4xl font-extrabold text-blue-600">
+
+                      95
+
+                    </h4>
+
+                    <p className="text-gray-500">
+
+                      Accuracy
+
+                    </p>
+
+                  </div>
+
+                  <div className="glass rounded-2xl p-5 text-center">
+
+                    <h4 className="text-4xl font-extrabold text-purple-600">
+
+                      92
+
+                    </h4>
+
+                    <p className="text-gray-500">
+
+                      Fluency
+
+                    </p>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </motion.div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* TESTIMONIALS */}
+      <section className="py-28">
+
+        <div className="max-w-7xl mx-auto px-6">
+
+          <div className="text-center mb-20">
+
+            <h2 className="text-5xl font-extrabold mb-6">
+
+              Loved By Learners
+
+            </h2>
+
+            <p className="text-xl text-gray-500">
+
+              Real experiences from our users
+
+            </p>
+
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-10">
+
+            {testimonials.map((user, index) => (
+
+              <motion.div
+                key={index}
+                whileHover={{
+                  y: -10
+                }}
+                className="premium-card p-8"
+              >
+
+                <div className="flex items-center gap-4 mb-6">
+
                   <img
                     src={user.image}
                     alt={user.name}
-                    className="h-14 w-14 rounded-full object-cover border-2 border-blue-200 shadow-sm"
+                    className="w-16 h-16 rounded-full border-4 border-blue-100"
                   />
-                  <div className="ml-4">
-                    <h4 className="text-lg font-semibold text-gray-900">{user.name}</h4>
-                    <p className="text-sm text-gray-500">{user.role}</p>
-                  </div>
-                </div>
-                <p className="text-gray-700 italic text-md">"{user.quote}"</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
 
-      {/* Horizontal Scroll Highlights */}
-      <div className="relative bg-gray-50 overflow-hidden py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Highlights</h2>
-          <div className="overflow-x-auto whitespace-nowrap scroll-smooth scrollbar-hide">
+                  <div>
+
+                    <h3 className="text-xl font-bold">
+
+                      {user.name}
+
+                    </h3>
+
+                    <p className="text-gray-500">
+
+                      {user.role}
+
+                    </p>
+
+                  </div>
+
+                </div>
+
+                <div className="flex gap-1 mb-5">
+
+                  {[...Array(5)].map((_, i) => (
+
+                    <FaStar
+                      key={i}
+                      className="text-yellow-400"
+                    />
+                  ))}
+
+                </div>
+
+                <p className="text-gray-600 leading-relaxed italic">
+
+                  "{user.quote}"
+
+                </p>
+
+              </motion.div>
+            ))}
+
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* FAQ */}
+      <section className="py-28">
+
+        <div className="max-w-5xl mx-auto px-6">
+
+          <div className="text-center mb-20">
+
+            <h2 className="text-5xl font-extrabold mb-6">
+
+              Frequently Asked Questions
+
+            </h2>
+
+            <p className="text-xl text-gray-500">
+
+              Everything you need to know
+
+            </p>
+
+          </div>
+
+          <div className="space-y-8">
+
             {[
               {
-                img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80",
-                title: "Explore New Languages",
-                desc: "Practice pronunciation easily.",
+                q: 'How does AI analyze pronunciation?',
+                a: 'Our AI compares speech patterns, pronunciation, and fluency to provide smart feedback.'
               },
               {
-                img: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80",
-                title: "Instant Feedback",
-                desc: "Get real-time AI corrections.",
+                q: 'Can I track my progress?',
+                a: 'Yes. Your dashboard stores recordings, analytics, and pronunciation scores.'
               },
               {
-                img: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=400&q=80",
-                title: "User Friendly",
-                desc: "Simple & effective interface.",
-              },
-              {
-                img: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=400&q=80",
-                title: "Track Your Progress",
-                desc: "Visualize your improvements.",
-              },
-              {
-                img: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=400&q=80",
-                title: "Join the Community",
-                desc: "Learn with others worldwide.",
-              },
-            ].map(({ img, title, desc }, idx) => (
-              <div
-                key={idx}
-                className="inline-block mr-6 w-64 rounded-lg shadow-lg bg-white overflow-hidden"
-              >
-                <img src={img} alt={title} className="w-full h-40 object-cover" />
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-                  <p className="mt-1 text-gray-600 text-sm">{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+                q: 'Does it support multiple languages?',
+                a: 'Yes. SpeakRight AI supports multiple language pronunciation practice.'
+              }
+            ].map((item, index) => (
 
-      {/* Final CTA */}
-      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
-        <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center justify-between text-center lg:text-left">
-          <div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              <span className="block">Ready to improve your pronunciation?</span>
-              <span className="block text-indigo-100">Start practicing today.</span>
-            </h2>
-          </div>
-          <div className="mt-8 lg:mt-0">
-            {currentUser ? (
-              <Link
-                to="/practice"
-                className="inline-block bg-white text-blue-700 hover:bg-blue-50 px-6 py-3 rounded-lg text-lg font-semibold shadow-md transition duration-300"
+              <motion.div
+                key={index}
+                whileHover={{
+                  scale: 1.02
+                }}
+                className="premium-card p-8"
               >
-                Practice Now
-              </Link>
-            ) : (
-              <Link
-                to="/register"
-                className="inline-block bg-white text-purple-700 hover:bg-purple-50 px-6 py-3 rounded-lg text-lg font-semibold shadow-md transition duration-300"
-              >
-                Sign Up Free
-              </Link>
-            )}
+
+                <h3 className="text-2xl font-bold mb-4">
+
+                  {item.q}
+
+                </h3>
+
+                <p className="text-gray-500 text-lg leading-relaxed">
+
+                  {item.a}
+
+                </p>
+
+              </motion.div>
+            ))}
+
           </div>
+
         </div>
-      </div>
+
+      </section>
+
+      {/* CTA */}
+      <section className="py-28">
+
+        <div className="max-w-6xl mx-auto px-6">
+
+          <div className="premium-card p-16 text-center relative overflow-hidden">
+
+            <div className="absolute top-0 left-0 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"></div>
+
+            <div className="absolute bottom-0 right-0 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl"></div>
+
+            <div className="relative z-10">
+
+              <h2 className="text-6xl font-extrabold mb-8">
+
+                Ready To Transform
+
+                <span className="gradient-text block">
+
+                  Your Pronunciation?
+
+                </span>
+
+              </h2>
+
+              <p className="text-xl text-gray-500 mb-10 max-w-3xl mx-auto">
+
+                Join thousands of learners improving their speaking confidence using AI-powered pronunciation analysis.
+
+              </p>
+
+              <Link
+                to={
+                  currentUser
+                    ? '/practice'
+                    : '/register'
+                }
+                className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-10 py-5 rounded-2xl text-xl font-bold shadow-2xl hover:scale-105 transition-all duration-300"
+              >
+
+                Start Your Journey
+
+              </Link>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
     </div>
   );
 }

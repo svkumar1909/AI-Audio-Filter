@@ -1,68 +1,207 @@
-import React, { useRef, useEffect } from 'react';
+import React, {
+  useRef,
+  useEffect
+} from 'react';
 
-const WaveformVisualizer = ({ data = [], isRecording }) => {
-  const canvasRef = useRef(null);
-  
+const WaveformVisualizer = ({
+  data = [],
+  isRecording
+}) => {
+
+  const canvasRef =
+    useRef(null);
+
   useEffect(() => {
-    const canvas = canvasRef.current;
+
+    const canvas =
+      canvasRef.current;
+
     if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
-    
-    // If not recording and no data, show a flat line
-    if (!isRecording && data.length === 0) {
+
+    const ctx =
+      canvas.getContext('2d');
+
+    const width =
+      canvas.width;
+
+    const height =
+      canvas.height;
+
+    ctx.clearRect(
+      0,
+      0,
+      width,
+      height
+    );
+
+    // background
+    const bgGradient =
+      ctx.createLinearGradient(
+        0,
+        0,
+        width,
+        height
+      );
+
+    bgGradient.addColorStop(
+      0,
+      '#eef2ff'
+    );
+
+    bgGradient.addColorStop(
+      1,
+      '#f5f3ff'
+    );
+
+    ctx.fillStyle = bgGradient;
+
+    ctx.fillRect(
+      0,
+      0,
+      width,
+      height
+    );
+
+    // flat line
+    if (
+      !isRecording &&
+      data.length === 0
+    ) {
+
       ctx.beginPath();
-      ctx.moveTo(0, height / 2);
-      ctx.lineTo(width, height / 2);
-      ctx.strokeStyle = '#CBD5E0';
-      ctx.lineWidth = 2;
+
+      ctx.moveTo(
+        0,
+        height / 2
+      );
+
+      ctx.lineTo(
+        width,
+        height / 2
+      );
+
+      ctx.strokeStyle =
+        '#cbd5e1';
+
+      ctx.lineWidth = 3;
+
       ctx.stroke();
+
       return;
     }
-    
-    // Draw waveform
-    const barWidth = width / (data.length || 1);
-    const centerY = height / 2;
-    
-    ctx.fillStyle = isRecording ? '#F56565' : '#4299E1';
-    
-    data.forEach((value, index) => {
-      // Normalize value (0-255) to a reasonable height
-      const barHeight = (value / 255) * (height * 0.8);
-      
-      // Draw bars symmetrically above and below the center line
-      const halfBarHeight = barHeight / 2;
-      const x = index * barWidth;
-      
-      ctx.fillRect(x, centerY - halfBarHeight, barWidth - 1, halfBarHeight);
-      ctx.fillRect(x, centerY, barWidth - 1, halfBarHeight);
-    });
-    
-    // Add a glow effect when recording
+
+    const barWidth =
+      width / data.length;
+
+    const centerY =
+      height / 2;
+
+    data.forEach(
+      (value, index) => {
+
+        const barHeight =
+          (value / 255) *
+          (height * 0.9);
+
+        const x =
+          index * barWidth;
+
+        const gradient =
+          ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            height
+          );
+
+        if (isRecording) {
+
+          gradient.addColorStop(
+            0,
+            '#ef4444'
+          );
+
+          gradient.addColorStop(
+            1,
+            '#ec4899'
+          );
+
+        } else {
+
+          gradient.addColorStop(
+            0,
+            '#6366f1'
+          );
+
+          gradient.addColorStop(
+            1,
+            '#8b5cf6'
+          );
+        }
+
+        ctx.fillStyle = gradient;
+
+        const halfHeight =
+          barHeight / 2;
+
+        ctx.beginPath();
+
+        ctx.roundRect(
+          x,
+          centerY - halfHeight,
+          barWidth - 2,
+          barHeight,
+          10
+        );
+
+        ctx.fill();
+      }
+    );
+
+    // glow line
     if (isRecording) {
+
       ctx.beginPath();
-      ctx.moveTo(0, centerY);
-      ctx.lineTo(width, centerY);
-      ctx.strokeStyle = 'rgba(245, 101, 101, 0.3)';
-      ctx.lineWidth = height * 0.7;
-      ctx.filter = 'blur(8px)';
+
+      ctx.moveTo(
+        0,
+        centerY
+      );
+
+      ctx.lineTo(
+        width,
+        centerY
+      );
+
+      ctx.strokeStyle =
+        'rgba(239,68,68,0.2)';
+
+      ctx.lineWidth =
+        height * 0.8;
+
+      ctx.filter =
+        'blur(10px)';
+
       ctx.stroke();
-      ctx.filter = 'none';
+
+      ctx.filter =
+        'none';
     }
+
   }, [data, isRecording]);
-  
+
   return (
-    <canvas 
-      ref={canvasRef} 
-      width={600} 
-      height={100} 
-      className="w-full h-full bg-gray-50 rounded"
-    />
+
+    <div className="glass rounded-3xl overflow-hidden shadow-2xl">
+
+      <canvas
+        ref={canvasRef}
+        width={900}
+        height={180}
+        className="w-full h-48"
+      />
+
+    </div>
   );
 };
 

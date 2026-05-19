@@ -1,249 +1,742 @@
-import { useEffect, useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useAudio } from '../hooks/useAudio';
-import ProgressChart from '../components/ProgressChart';
+import {
+  useEffect,
+  useState
+} from 'react';
 
-function DashboardPage() {
-  const { currentUser } = useAuth();
-  const { fetchUserRecordings } = useAudio();
+import {
+  FaMicrophone,
+  FaChartLine,
+  FaTrophy,
+  FaArrowUp,
+  FaBrain,
+  FaFire
+} from 'react-icons/fa';
 
-  const [recordings, setRecordings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+import {
+  audioService
+} from '../services/audioService';
 
-  const [stats, setStats] = useState({
-    totalPractices: 0,
-    averageScore: 0,
-    bestScore: 0,
-    recentImprovementRate: 0,
-    practicesByDay: []
-  });
+const DashboardPage = () => {
+
+  const [stats, setStats] =
+    useState({
+
+      totalPractices: 0,
+
+      averageScore: 0,
+
+      bestScore: 0,
+
+      improvement: 0
+    });
+
+  const [recentRecordings, setRecentRecordings] =
+    useState([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState(null);
+
+  // ====================================
+  // 🎯 PRACTICE SESSIONS
+  // ====================================
+
+  const practiceSessions =
+    recentRecordings.filter(
+      item => item.originalText
+    );
+
+  // ====================================
+  // 🧠 SPEECH SESSIONS
+  // ====================================
+
+  const speechSessions =
+    recentRecordings.filter(
+      item => !item.originalText
+    );
 
   useEffect(() => {
-    const loadUserData = async () => {
+
+    fetchDashboardData();
+
+  }, []);
+
+  const fetchDashboardData =
+    async () => {
+
       try {
-        const data = await fetchUserRecordings();
-        const userRecordings = Array.isArray(data) ? data : [];
 
-        setRecordings(userRecordings);
+        setLoading(true);
 
-        if (userRecordings.length > 0) {
-          const totalPractices = userRecordings.length;
+        const recordings =
+          await audioService.getUserRecordings();
 
-          const totalScore = userRecordings.reduce(
-            (sum, rec) => sum + (rec.overallScore || 0),
-            0
-          );
+        setRecentRecordings(
+          recordings.slice(0, 5)
+        );
 
-          const averageScore = totalScore / totalPractices;
-
-          const bestScore = Math.max(
-            ...userRecordings.map(rec => rec.overallScore || 0)
-          );
-
-          const recentRecordings = userRecordings.slice(0, 5);
-          const previousRecordings = userRecordings.slice(5, 10);
-
-          let recentImprovementRate = 0;
-
-          if (previousRecordings.length > 0) {
-            const recentAvg =
-              recentRecordings.reduce((sum, r) => sum + (r.overallScore || 0), 0) /
-              recentRecordings.length;
-
-            const prevAvg =
-              previousRecordings.reduce((sum, r) => sum + (r.overallScore || 0), 0) /
-              previousRecordings.length;
-
-            if (prevAvg !== 0) {
-              recentImprovementRate = ((recentAvg - prevAvg) / prevAvg) * 100;
-            }
-          }
-
-          const practicesByDay = groupRecordingsByDay(userRecordings);
+        if (
+          !recordings ||
+          recordings.length === 0
+        ) {
 
           setStats({
-            totalPractices,
-            averageScore: averageScore.toFixed(1),
-            bestScore: bestScore.toFixed(1),
-            recentImprovementRate: recentImprovementRate.toFixed(1),
-            practicesByDay
+
+            totalPractices: 0,
+
+            averageScore: 0,
+
+            bestScore: 0,
+
+            improvement: 0
           });
+
+          return;
         }
+
+        const totalPractices =
+          recordings.length;
+
+        const averageScore =
+          recordings.reduce(
+            (sum, rec) =>
+              sum +
+              (rec.overallScore || 0),
+            0
+          ) / totalPractices;
+
+        const bestScore =
+          Math.max(
+            ...recordings.map(
+              rec =>
+                rec.overallScore || 0
+            )
+          );
+
+        let improvement = 0;
+
+        if (
+          recordings.length >= 2
+        ) {
+
+          const latest =
+            recordings[0]
+              .overallScore || 0;
+
+          const oldest =
+            recordings[
+              recordings.length - 1
+            ].overallScore || 0;
+
+          improvement =
+            latest - oldest;
+        }
+
+        setStats({
+
+          totalPractices,
+
+          averageScore,
+
+          bestScore,
+
+          improvement
+        });
+
       } catch (err) {
-        setError('Failed to load your practice data');
+
+        console.log(err);
+
+        setError(
+          'Failed to load dashboard'
+        );
+
       } finally {
+
         setLoading(false);
       }
     };
 
-    loadUserData();
-  }, [fetchUserRecordings]);
-
-  // 🔥 GROUP FUNCTION
-  const groupRecordingsByDay = (recordings) => {
-    const grouped = {};
-
-    recordings.forEach(rec => {
-      const date = new Date(rec.createdAt).toLocaleDateString();
-
-      if (!grouped[date]) {
-        grouped[date] = { count: 0, totalScore: 0 };
-      }
-
-      grouped[date].count += 1;
-      grouped[date].totalScore += rec.overallScore || 0;
-    });
-
-    return Object.entries(grouped).map(([date, data]) => ({
-      date,
-      count: data.count,
-      averageScore: data.totalScore / data.count
-    }));
-  };
-
-  const getChartData = () => {
-    return stats.practicesByDay.slice(0, 14).reverse();
-  };
-
-  // 🔥 NEW SMART TEXT
-  const improvementText =
-    parseFloat(stats.recentImprovementRate) > 0
-      ? `You improved +${stats.recentImprovementRate}% this week 🔥`
-      : stats.totalPractices > 0
-      ? `Keep practicing to improve 🚀`
-      : `Start practicing to see your progress`;
-
-  const streak = Math.min(stats.totalPractices, 7);
-
-  // 🔥 SCORE COLOR FUNCTION
-  const getScoreColor = (score) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-red-600';
-  };
+  // ====================================
+  // ⏳ LOADING
+  // ====================================
 
   if (loading) {
+
     return (
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="flex justify-center">
-          <div className="animate-spin h-10 w-10 border-t-2 border-blue-600 rounded-full"></div>
+
+      <div className="min-h-screen flex items-center justify-center">
+
+        <div className="text-center">
+
+          <div className="w-20 h-20 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+
+          <h2 className="text-4xl font-bold gradient-text">
+
+            Loading Dashboard...
+
+          </h2>
+
         </div>
+
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
 
-      <h1 className="text-3xl font-bold mb-6">Your Dashboard</h1>
+    <div className="min-h-screen">
 
-      {error && (
-        <div className="bg-red-100 p-4 rounded mb-6 text-red-600">
-          {error}
+      <div className="max-w-7xl mx-auto">
+
+        {/* HERO */}
+        <div className="premium-card p-10 mb-10 relative overflow-hidden">
+
+          <div className="absolute top-0 left-0 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
+
+          <div className="absolute bottom-0 right-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"></div>
+
+          <div className="relative z-10">
+
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-10">
+
+              <div>
+
+                <div className="flex items-center gap-4 mb-5">
+
+                  <div className="w-20 h-20 rounded-3xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center shadow-2xl glow-animation">
+
+                    <FaBrain className="text-white text-4xl" />
+
+                  </div>
+
+                  <div>
+
+                    <h1 className="text-6xl font-extrabold gradient-text">
+
+                      AI Dashboard
+
+                    </h1>
+
+                    <p className="text-gray-500 text-xl mt-2">
+
+                      Track your pronunciation journey with AI insights.
+
+                    </p>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* SCORE CIRCLE */}
+              <div className="flex justify-center">
+
+                <div className="w-52 h-52 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center shadow-[0_20px_60px_rgba(99,102,241,0.4)] floating">
+
+                  <div className="w-40 h-40 rounded-full bg-white flex flex-col items-center justify-center">
+
+                    <p className="text-6xl font-extrabold gradient-text">
+
+                      {stats.averageScore.toFixed(0)}
+
+                    </p>
+
+                    <p className="text-gray-500 font-semibold">
+
+                      Average Score
+
+                    </p>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
         </div>
-      )}
 
-      {/* Welcome */}
-      <div className="bg-blue-600 text-white p-6 rounded mb-6">
-        <h2 className="text-2xl">
-          Welcome back, {currentUser?.name || 'User'}!
-        </h2>
-      </div>
+        {/* ERROR */}
+        {error && (
 
-      {/* 🔥 AI FEEDBACK */}
-      <div className="bg-green-50 p-4 rounded mb-4 text-green-700 font-medium">
-        {improvementText}
-      </div>
+          <div className="bg-red-100 text-red-700 p-5 rounded-3xl mb-8 shadow-lg">
 
-      <div className="bg-yellow-50 p-4 rounded mb-8 text-yellow-700 font-medium">
-        🔥 Practice Streak: {streak} days
-      </div>
+            {error}
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-
-        <div className="bg-white p-4 rounded shadow text-center">
-          <p>Total Practices</p>
-          <h2 className="text-2xl font-bold">{stats.totalPractices}</h2>
-        </div>
-
-        <div className="bg-white p-4 rounded shadow text-center">
-          <p>Average Score</p>
-          <h2 className={`text-2xl font-bold ${getScoreColor(stats.averageScore)}`}>
-            {stats.averageScore}/100
-          </h2>
-        </div>
-
-        <div className="bg-white p-4 rounded shadow text-center">
-          <p>Best Score</p>
-          <h2 className={`text-2xl font-bold ${getScoreColor(stats.bestScore)}`}>
-            {stats.bestScore}/100
-          </h2>
-        </div>
-
-        <div className="bg-white p-4 rounded shadow text-center">
-          <p>Improvement</p>
-          <h2 className="text-2xl font-bold">
-            {stats.recentImprovementRate}%
-          </h2>
-        </div>
-
-      </div>
-
-      {/* Chart */}
-      <div className="bg-white p-6 rounded shadow mb-8">
-        <ProgressChart data={getChartData()} />
-      </div>
-
-      {/* Table */}
-      <div className="bg-white p-6 rounded shadow">
-        <h2 className="mb-4 text-xl">Recent Practice Sessions</h2>
-
-        {recordings.length === 0 ? (
-          <p>No recordings yet</p>
-        ) : (
-          <table className="w-full text-sm">
-
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Phrase</th>
-                <th>Score</th>
-                <th>Accuracy</th>
-                <th>Fluency</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {recordings.slice(0, 10).map((rec, i) => (
-                <tr key={i}>
-                  <td>{new Date(rec.createdAt).toLocaleDateString()}</td>
-
-                  <td>{(rec.originalText || '').slice(0, 30)}</td>
-
-                  <td>
-                    <span className={`px-2 py-1 rounded text-white text-sm ${
-                      rec.overallScore >= 80 ? 'bg-green-500' :
-                      rec.overallScore >= 60 ? 'bg-yellow-500' :
-                      'bg-red-500'
-                    }`}>
-                      {rec.overallScore || 0}
-                    </span>
-                  </td>
-
-                  <td>{rec.accuracy || 0}</td>
-                  <td>{rec.fluency || 0}</td>
-                </tr>
-              ))}
-            </tbody>
-
-          </table>
+          </div>
         )}
+
+        {/* STATS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 mb-12">
+
+          {/* TOTAL */}
+          <div className="premium-card p-8">
+
+            <div className="flex items-center justify-between mb-6">
+
+              <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center">
+
+                <FaMicrophone className="text-blue-600 text-3xl" />
+
+              </div>
+
+              <span className="text-sm text-blue-600 font-semibold">
+
+                ACTIVE
+
+              </span>
+
+            </div>
+
+            <h3 className="text-gray-500 text-lg mb-3">
+
+              Total Sessions
+
+            </h3>
+
+            <p className="text-6xl font-extrabold text-gray-800">
+
+              {stats.totalPractices}
+
+            </p>
+
+          </div>
+
+          {/* AVG */}
+          <div className="premium-card p-8">
+
+            <div className="flex items-center justify-between mb-6">
+
+              <div className="w-16 h-16 rounded-2xl bg-green-100 flex items-center justify-center">
+
+                <FaChartLine className="text-green-600 text-3xl" />
+
+              </div>
+
+              <span className="text-sm text-green-600 font-semibold">
+
+                AI SCORE
+
+              </span>
+
+            </div>
+
+            <h3 className="text-gray-500 text-lg mb-3">
+
+              Average Score
+
+            </h3>
+
+            <p className="text-6xl font-extrabold text-green-600">
+
+              {stats.averageScore.toFixed(0)}
+
+            </p>
+
+          </div>
+
+          {/* BEST */}
+          <div className="premium-card p-8">
+
+            <div className="flex items-center justify-between mb-6">
+
+              <div className="w-16 h-16 rounded-2xl bg-yellow-100 flex items-center justify-center">
+
+                <FaTrophy className="text-yellow-600 text-3xl" />
+
+              </div>
+
+              <span className="text-sm text-yellow-600 font-semibold">
+
+                BEST
+
+              </span>
+
+            </div>
+
+            <h3 className="text-gray-500 text-lg mb-3">
+
+              Highest Score
+
+            </h3>
+
+            <p className="text-6xl font-extrabold text-yellow-500">
+
+              {stats.bestScore}
+
+            </p>
+
+          </div>
+
+          {/* IMPROVEMENT */}
+          <div className="premium-card p-8">
+
+            <div className="flex items-center justify-between mb-6">
+
+              <div className="w-16 h-16 rounded-2xl bg-purple-100 flex items-center justify-center">
+
+                <FaArrowUp className="text-purple-600 text-3xl" />
+
+              </div>
+
+              <span className="text-sm text-purple-600 font-semibold">
+
+                GROWTH
+
+              </span>
+
+            </div>
+
+            <h3 className="text-gray-500 text-lg mb-3">
+
+              Improvement
+
+            </h3>
+
+            <p className="text-6xl font-extrabold text-purple-600">
+
+              {stats.improvement}
+
+            </p>
+
+          </div>
+
+        </div>
+
+        {/* DUAL AI ANALYTICS */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-12">
+
+          {/* PRACTICE */}
+          <div className="premium-card p-8 relative overflow-hidden">
+
+            <div className="absolute top-0 right-0 w-52 h-52 bg-blue-500/10 rounded-full blur-3xl"></div>
+
+            <div className="relative z-10">
+
+              <div className="flex items-center gap-4 mb-8">
+
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 flex items-center justify-center text-white text-3xl shadow-xl">
+
+                  🎯
+
+                </div>
+
+                <div>
+
+                  <h2 className="text-3xl font-extrabold">
+
+                    Pronunciation Trainer
+
+                  </h2>
+
+                  <p className="text-gray-500">
+
+                    Practice analytics
+
+                  </p>
+
+                </div>
+
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+
+                <div className="glass rounded-3xl p-6 text-center">
+
+                  <h3 className="text-5xl font-extrabold text-blue-600 mb-3">
+
+                    {practiceSessions.length}
+
+                  </h3>
+
+                  <p className="text-gray-500 font-medium">
+
+                    Sessions
+
+                  </p>
+
+                </div>
+
+                <div className="glass rounded-3xl p-6 text-center">
+
+                  <h3 className="text-5xl font-extrabold text-cyan-600 mb-3">
+
+                    {
+                      practiceSessions.length > 0
+                        ? Math.round(
+                            practiceSessions.reduce(
+                              (sum, item) =>
+                                sum +
+                                (item.overallScore || 0),
+                              0
+                            ) / practiceSessions.length
+                          )
+                        : 0
+                    }
+
+                  </h3>
+
+                  <p className="text-gray-500 font-medium">
+
+                    Avg Score
+
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* SPEECH */}
+          <div className="premium-card p-8 relative overflow-hidden">
+
+            <div className="absolute bottom-0 left-0 w-52 h-52 bg-purple-500/10 rounded-full blur-3xl"></div>
+
+            <div className="relative z-10">
+
+              <div className="flex items-center gap-4 mb-8">
+
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-500 flex items-center justify-center text-white text-3xl shadow-xl">
+
+                  🧠
+
+                </div>
+
+                <div>
+
+                  <h2 className="text-3xl font-extrabold">
+
+                    Speech Intelligence
+
+                  </h2>
+
+                  <p className="text-gray-500">
+
+                    AI analytics
+
+                  </p>
+
+                </div>
+
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+
+                <div className="glass rounded-3xl p-6 text-center">
+
+                  <h3 className="text-5xl font-extrabold text-purple-600 mb-3">
+
+                    {speechSessions.length}
+
+                  </h3>
+
+                  <p className="text-gray-500 font-medium">
+
+                    Sessions
+
+                  </p>
+
+                </div>
+
+                <div className="glass rounded-3xl p-6 text-center">
+
+                  <h3 className="text-5xl font-extrabold text-pink-600 mb-3">
+
+                    {
+                      speechSessions.length > 0
+                        ? Math.round(
+                            speechSessions.reduce(
+                              (sum, item) =>
+                                sum +
+                                (item.overallScore || 0),
+                              0
+                            ) / speechSessions.length
+                          )
+                        : 0
+                    }
+
+                  </h3>
+
+                  <p className="text-gray-500 font-medium">
+
+                    Avg Score
+
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* RECENT */}
+        <div className="premium-card p-10">
+
+          <div className="flex items-center gap-4 mb-10">
+
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-orange-500 to-pink-500 flex items-center justify-center shadow-xl">
+
+              <FaFire className="text-white text-3xl" />
+
+            </div>
+
+            <div>
+
+              <h2 className="text-4xl font-bold">
+
+                Recent Sessions
+
+              </h2>
+
+              <p className="text-gray-500 text-lg">
+
+                Your latest AI analyses
+
+              </p>
+
+            </div>
+
+          </div>
+
+          {recentRecordings.length === 0 ? (
+
+            <div className="text-center py-20">
+
+              <div className="text-8xl mb-6">
+                🎤
+              </div>
+
+              <h3 className="text-3xl font-bold text-gray-700 mb-4">
+
+                No Sessions Yet
+
+              </h3>
+
+            </div>
+
+          ) : (
+
+            <div className="space-y-8">
+
+              {recentRecordings.map(
+                (recording) => (
+
+                  <div
+                    key={recording._id}
+                    className="glass rounded-3xl p-8 hover:scale-[1.01] transition-all duration-300"
+                  >
+
+                    <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-8">
+
+                      <div className="flex-1">
+
+                        <div className="flex flex-wrap items-center gap-4 mb-4">
+
+                          <h3 className="text-2xl font-bold text-gray-800">
+
+                            {
+                              recording.originalText ||
+                              'Speech Analysis Session'
+                            }
+
+                          </h3>
+
+                        </div>
+
+                        <p className="text-gray-500 mb-3 leading-relaxed">
+
+                          {
+                            recording.transcription ||
+                            'No transcription available'
+                          }
+
+                        </p>
+
+                        <p className="text-blue-500 mb-3 font-medium">
+
+                          Language: {recording.language}
+
+                        </p>
+
+                      </div>
+
+                      <div className="flex flex-col items-center gap-6">
+
+                        <div className="w-28 h-28 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center shadow-2xl">
+
+                          <div className="text-center">
+
+                            <p className="text-3xl font-extrabold text-white">
+
+                              {
+                                recording.overallScore || 0
+                              }
+
+                            </p>
+
+                            <p className="text-xs text-blue-100">
+
+                              SCORE
+
+                            </p>
+
+                          </div>
+
+                        </div>
+
+                        {recording.filePath && (
+
+                          <div className="w-72">
+
+                            <audio
+                              controls
+                              className="w-full rounded-xl"
+                              preload="metadata"
+                            >
+
+                              <source
+                                src={`http://localhost:5000/uploads/${recording.filePath}`}
+                                type="audio/webm"
+                              />
+
+                              Your browser does not support audio.
+
+                            </audio>
+
+                          </div>
+                        )}
+
+                      </div>
+
+                    </div>
+
+                  </div>
+                )
+              )}
+
+            </div>
+          )}
+
+        </div>
+
       </div>
 
     </div>
   );
-}
+};
 
 export default DashboardPage;

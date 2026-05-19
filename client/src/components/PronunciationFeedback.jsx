@@ -1,170 +1,411 @@
 import React, { useState } from 'react';
-import { FaPlay, FaPause, FaVolumeUp, FaExclamationTriangle } from 'react-icons/fa';
 
-const PronunciationFeedback = ({ analysis, recordingUrl, targetText }) => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [audioPlayer] = useState(new Audio());
+import {
+  FaPlay,
+  FaPause,
+  FaCheckCircle,
+  FaExclamationTriangle,
+  FaBrain,
+  FaWaveSquare
+} from 'react-icons/fa';
+
+const PronunciationFeedback = ({
+  analysis,
+  recordingUrl,
+  targetText
+}) => {
+
+  const [isPlaying, setIsPlaying] =
+    useState(false);
+
+  const [audioPlayer] =
+    useState(new Audio());
 
   const getScoreColor = (score) => {
-    if (score >= 90) return 'text-green-600';
-    if (score >= 75) return 'text-blue-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-red-600';
+
+    if (score >= 90)
+      return 'from-green-500 to-emerald-500';
+
+    if (score >= 75)
+      return 'from-blue-500 to-cyan-500';
+
+    if (score >= 60)
+      return 'from-yellow-500 to-orange-500';
+
+    return 'from-red-500 to-pink-500';
   };
 
-  const getScoreDescription = (score) => {
-    if (score >= 90) return 'Excellent';
-    if (score >= 75) return 'Good';
-    if (score >= 60) return 'Fair';
-    return 'Needs Work';
+  const getScoreText = (score) => {
+
+    if (score >= 90)
+      return 'Excellent';
+
+    if (score >= 75)
+      return 'Very Good';
+
+    if (score >= 60)
+      return 'Good';
+
+    return 'Needs Improvement';
   };
 
   const toggleAudio = () => {
+
     if (!recordingUrl) return;
 
     if (isPlaying) {
+
       audioPlayer.pause();
+
       setIsPlaying(false);
+
     } else {
-      audioPlayer.src = recordingUrl;
+
+      audioPlayer.src =
+        recordingUrl;
+
       audioPlayer.play();
+
       setIsPlaying(true);
-      audioPlayer.onended = () => setIsPlaying(false);
+
+      audioPlayer.onended = () =>
+        setIsPlaying(false);
     }
   };
 
-  // 🔥 UPDATED: fallback logic added
   const renderTargetText = () => {
 
-    // ✅ CASE 1: AI word-level feedback exists
-    if (analysis?.wordLevelFeedback && targetText) {
-      const words = targetText.split(' ');
+    if (
+      analysis?.wordLevelFeedback &&
+      targetText
+    ) {
+
+      const words =
+        targetText.split(' ');
 
       return (
-        <div className="text-lg leading-relaxed">
+
+        <div className="flex flex-wrap gap-3">
+
           {words.map((word, index) => {
-            const wordAnalysis = analysis.wordLevelFeedback.find(
-              w => w.word.toLowerCase() === word.toLowerCase()
-            );
 
-            let className = 'inline-block px-1 mx-0.5 rounded';
+            const wordAnalysis =
+              analysis.wordLevelFeedback.find(
+                w =>
+                  w.word.toLowerCase() ===
+                  word.toLowerCase()
+              );
 
-            if (!wordAnalysis) {
-              className += ' bg-gray-100';
-            } else if (wordAnalysis.score >= 90) {
-              className += ' bg-green-100';
-            } else if (wordAnalysis.score >= 75) {
-              className += ' bg-blue-100';
-            } else if (wordAnalysis.score >= 60) {
-              className += ' bg-yellow-100';
-            } else {
-              className += ' bg-red-100';
+            let style =
+              'bg-gray-100 text-gray-700';
+
+            if (wordAnalysis) {
+
+              if (
+                wordAnalysis.score >= 90
+              ) {
+
+                style =
+                  'bg-green-100 text-green-700';
+
+              } else if (
+                wordAnalysis.score >= 75
+              ) {
+
+                style =
+                  'bg-blue-100 text-blue-700';
+
+              } else if (
+                wordAnalysis.score >= 60
+              ) {
+
+                style =
+                  'bg-yellow-100 text-yellow-700';
+
+              } else {
+
+                style =
+                  'bg-red-100 text-red-700';
+              }
             }
 
             return (
-              <span key={index} className={className}>
+
+              <div
+                key={index}
+                className={`px-4 py-2 rounded-2xl font-semibold flex items-center gap-2 ${style}`}
+              >
+
                 {word}
-                {wordAnalysis?.score < 60 && (
-                  <FaExclamationTriangle className="inline ml-1 text-red-500 text-xs" />
+
+                {wordAnalysis?.score >= 75 ? (
+
+                  <FaCheckCircle />
+
+                ) : (
+
+                  <FaExclamationTriangle />
                 )}
-              </span>
+
+              </div>
             );
           })}
+
         </div>
       );
     }
 
-    // ✅ CASE 2: fallback (simple compare)
-    if (analysis?.originalText && analysis?.transcription) {
+    return (
 
-      const targetWords = analysis.originalText.toLowerCase().split(' ');
-      const spokenWords = analysis.transcription.toLowerCase().split(' ');
+      <p className="text-gray-500">
 
-      return (
-        <div className="text-lg leading-relaxed">
-          {targetWords.map((word, i) => {
-            let className = 'inline-block px-1 mx-0.5 rounded';
+        No detailed feedback available
 
-            if (spokenWords[i] === word) {
-              className += ' bg-green-100';
-            } else if (spokenWords[i]) {
-              className += ' bg-red-100';
-            } else {
-              className += ' bg-gray-200';
-            }
-
-            return (
-              <span key={i} className={className}>
-                {word}
-              </span>
-            );
-          })}
-        </div>
-      );
-    }
-
-    return <p>No data</p>;
+      </p>
+    );
   };
 
   if (!analysis) {
+
     return (
-      <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
-        <p className="text-gray-500 text-center">Analysis in progress...</p>
+
+      <div className="premium-card p-10 text-center">
+
+        <div className="w-20 h-20 rounded-full border-4 border-blue-500 border-t-transparent animate-spin mx-auto mb-6"></div>
+
+        <h2 className="text-3xl font-bold gradient-text">
+
+          AI Analysis Running...
+
+        </h2>
+
       </div>
     );
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
 
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Pronunciation Feedback</h2>
+    <div className="premium-card p-8 mt-10">
+
+      {/* HEADER */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-10">
+
+        <div className="flex items-center gap-5">
+
+          <div className="w-20 h-20 rounded-3xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center shadow-2xl glow-animation">
+
+            <FaBrain className="text-white text-4xl" />
+
+          </div>
+
+          <div>
+
+            <h2 className="text-4xl font-extrabold gradient-text">
+
+              AI Pronunciation Analysis
+
+            </h2>
+
+            <p className="text-gray-500 text-lg mt-2">
+
+              Real-time pronunciation evaluation & feedback
+
+            </p>
+
+          </div>
+
+        </div>
 
         {recordingUrl && (
-          <button onClick={toggleAudio} className="flex gap-2 px-4 py-2 bg-blue-100 rounded">
-            {isPlaying ? <FaPause /> : <FaPlay />}
-            {isPlaying ? 'Pause' : 'Play'}
+
+          <button
+            onClick={toggleAudio}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4 rounded-2xl flex items-center gap-3 shadow-xl hover:scale-105 transition-all duration-300"
+          >
+
+            {isPlaying ? (
+              <FaPause />
+            ) : (
+              <FaPlay />
+            )}
+
+            {isPlaying
+              ? 'Pause Audio'
+              : 'Play Audio'}
+
           </button>
         )}
+
       </div>
 
-      {/* SCORE */}
-      <div className="mb-6">
-        <div className="flex justify-between">
-          <h3>Overall Score</h3>
-          <span className={`text-xl font-bold ${getScoreColor(analysis.overallScore)}`}>
-            {analysis.overallScore}/100
-          </span>
+      {/* MAIN GRID */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
+
+        {/* SCORE SECTION */}
+        <div className="glass rounded-3xl p-10">
+
+          <div className="flex items-center gap-3 mb-8">
+
+            <FaWaveSquare className="text-blue-600 text-3xl" />
+
+            <h3 className="text-3xl font-bold">
+
+              AI Score
+
+            </h3>
+
+          </div>
+
+          {/* CIRCLE */}
+          <div className="flex justify-center mb-10">
+
+            <div className={`w-60 h-60 rounded-full bg-gradient-to-r ${getScoreColor(analysis.overallScore)} flex items-center justify-center shadow-[0_20px_60px_rgba(99,102,241,0.4)] floating`}>
+
+              <div className="w-44 h-44 rounded-full bg-white flex flex-col items-center justify-center">
+
+                <h2 className="text-6xl font-extrabold gradient-text">
+
+                  {analysis.overallScore || 0}
+
+                </h2>
+
+                <p className="text-gray-500 font-semibold">
+
+                  / 100
+
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* DESCRIPTION */}
+          <div className="text-center">
+
+            <p className="text-3xl font-bold mb-3">
+
+              {
+                getScoreText(
+                  analysis.overallScore
+                )
+              }
+
+            </p>
+
+            <p className="text-gray-500 text-lg">
+
+              AI pronunciation confidence level
+
+            </p>
+
+          </div>
+
         </div>
 
-        <div className="bg-gray-200 h-3 rounded mt-2">
-          <div
-            className="bg-blue-500 h-3 rounded"
-            style={{ width: `${analysis.overallScore}%` }}
-          />
+        {/* METRICS */}
+        <div className="space-y-8">
+
+          {/* ACCURACY */}
+          <div className="glass rounded-3xl p-8">
+
+            <div className="flex justify-between mb-4">
+
+              <h3 className="text-2xl font-bold">
+
+                Accuracy
+
+              </h3>
+
+              <span className="text-2xl font-bold text-green-600">
+
+                {analysis.accuracy || 0}%
+
+              </span>
+
+            </div>
+
+            <div className="w-full h-5 bg-gray-200 rounded-full overflow-hidden">
+
+              <div
+                className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-1000"
+                style={{
+                  width: `${analysis.accuracy || 0}%`
+                }}
+              />
+
+            </div>
+
+          </div>
+
+          {/* FLUENCY */}
+          <div className="glass rounded-3xl p-8">
+
+            <div className="flex justify-between mb-4">
+
+              <h3 className="text-2xl font-bold">
+
+                Fluency
+
+              </h3>
+
+              <span className="text-2xl font-bold text-purple-600">
+
+                {analysis.fluency || 0}%
+
+              </span>
+
+            </div>
+
+            <div className="w-full h-5 bg-gray-200 rounded-full overflow-hidden">
+
+              <div
+                className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-1000"
+                style={{
+                  width: `${analysis.fluency || 0}%`
+                }}
+              />
+
+            </div>
+
+          </div>
+
+          {/* TRANSCRIPT */}
+          <div className="glass rounded-3xl p-8">
+
+            <h3 className="text-2xl font-bold mb-5">
+
+              AI Transcript
+
+            </h3>
+
+            <div className="bg-white/70 rounded-2xl p-5 text-gray-700 text-lg">
+
+              {
+                analysis.transcription ||
+                'No transcription available'
+              }
+
+            </div>
+
+          </div>
+
         </div>
 
-        <p className="mt-2 text-sm text-gray-600">
-          {getScoreDescription(analysis.overallScore)}
-        </p>
       </div>
 
       {/* WORD FEEDBACK */}
-      <div className="mb-6">
-        <h3 className="mb-2">Word Feedback</h3>
-        <div className="p-4 bg-gray-50 rounded">
-          {renderTargetText()}
-        </div>
-      </div>
+      <div className="glass rounded-3xl p-8 mt-10">
 
-      {/* SIMPLE EXTRA */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-green-100 p-3 rounded text-center">
-          Accuracy: {analysis.accuracy}
-        </div>
-        <div className="bg-purple-100 p-3 rounded text-center">
-          Fluency: {analysis.fluency}
-        </div>
+        <h3 className="text-3xl font-bold mb-8">
+
+          Word-Level Feedback
+
+        </h3>
+
+        {renderTargetText()}
+
       </div>
 
     </div>

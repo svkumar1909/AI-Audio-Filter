@@ -1,93 +1,181 @@
-import { Link } from 'react-router-dom';
+import {
+  Link
+} from 'react-router-dom';
+
+import {
+  FaGithub,
+  FaLinkedin,
+  FaInstagram,
+  FaMicrophoneAlt
+} from 'react-icons/fa';
 
 const Footer = () => {
-  const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-900 text-gray-300 py-12 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-4">
-          {/* Logo & Description */}
+
+    <footer className="mt-20 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white relative overflow-hidden">
+
+      {/* GLOW */}
+      <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"></div>
+
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"></div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-16">
+
+        <div className="grid md:grid-cols-4 gap-10">
+
+          {/* BRAND */}
           <div>
-            <Link to="/" className="flex items-center space-x-3 text-white">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8 text-blue-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
-                />
-              </svg>
-              <span className="text-xl font-bold">SpeakRight</span>
-            </Link>
-            <p className="mt-4 text-sm text-gray-400 leading-relaxed">
-              Master your pronunciation with real-time AI feedback. Speak clearly, confidently, and correctly.
+
+            <div className="flex items-center gap-4 mb-6">
+
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center shadow-2xl">
+
+                <FaMicrophoneAlt className="text-white text-2xl" />
+
+              </div>
+
+              <div>
+
+                <h2 className="text-3xl font-extrabold">
+
+                  SpeakRight AI
+
+                </h2>
+
+                <p className="text-gray-400 text-sm">
+
+                  AI Pronunciation Assistant
+
+                </p>
+
+              </div>
+
+            </div>
+
+            <p className="text-gray-400 leading-relaxed">
+
+              Improve your pronunciation and fluency
+              with advanced AI speech analysis and
+              real-time feedback.
+
             </p>
+
           </div>
 
-          {/* Quick Links */}
+          {/* LINKS */}
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Quick Links</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link to="/" className="hover:text-white transition">Home</Link></li>
-              <li><Link to="/practice" className="hover:text-white transition">Practice</Link></li>
-              <li><Link to="/history" className="hover:text-white transition">Progress</Link></li>
-              <li><Link to="/settings" className="hover:text-white transition">Settings</Link></li>
-            </ul>
+
+            <h3 className="text-xl font-bold mb-5">
+
+              Navigation
+
+            </h3>
+
+            <div className="space-y-3">
+
+              <Link
+                to="/dashboard"
+                className="block text-gray-400 hover:text-white transition"
+              >
+                Dashboard
+              </Link>
+
+              <Link
+                to="/practice"
+                className="block text-gray-400 hover:text-white transition"
+              >
+                Practice
+              </Link>
+
+              <Link
+                to="/history"
+                className="block text-gray-400 hover:text-white transition"
+              >
+                History
+              </Link>
+
+            </div>
+
           </div>
 
-          {/* Resources */}
+          {/* FEATURES */}
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Resources</h3>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-white transition">Blog</a></li>
-              <li><a href="#" className="hover:text-white transition">Pronunciation Tips</a></li>
-              <li><a href="#" className="hover:text-white transition">FAQ</a></li>
-              <li><a href="#" className="hover:text-white transition">Support</a></li>
-            </ul>
+
+            <h3 className="text-xl font-bold mb-5">
+
+              Features
+
+            </h3>
+
+            <div className="space-y-3 text-gray-400">
+
+              <p>AI Speech Analysis</p>
+
+              <p>Real-time Feedback</p>
+
+              <p>Audio Recording</p>
+
+              <p>Progress Tracking</p>
+
+            </div>
+
           </div>
 
-          {/* Contact */}
+          {/* SOCIAL */}
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Contact Us</h3>
-            <ul className="space-y-3 text-sm">
-              <li className="flex items-start">
-                <svg className="h-5 w-5 mr-2 text-blue-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                support@speakright.ai
-              </li>
-              <li className="flex items-start">
-                <svg className="h-5 w-5 mr-2 text-blue-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                +1 (234) 567-8901
-              </li>
-              <li className="flex space-x-4 mt-2">
-                <a href="#" className="hover:text-white"><i className="fab fa-facebook-f"></i></a>
-                <a href="#" className="hover:text-white"><i className="fab fa-twitter"></i></a>
-                <a href="#" className="hover:text-white"><i className="fab fa-instagram"></i></a>
-                <a href="#" className="hover:text-white"><i className="fab fa-linkedin-in"></i></a>
-              </li>
-            </ul>
+
+            <h3 className="text-xl font-bold mb-5">
+
+              Connect
+
+            </h3>
+
+            <div className="flex gap-4">
+
+              <a
+                href="#"
+                className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-blue-500 transition"
+              >
+
+                <FaGithub className="text-2xl" />
+
+              </a>
+
+              <a
+                href="#"
+                className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-pink-500 transition"
+              >
+
+                <FaInstagram className="text-2xl" />
+
+              </a>
+
+              <a
+                href="#"
+                className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-blue-600 transition"
+              >
+
+                <FaLinkedin className="text-2xl" />
+
+              </a>
+
+            </div>
+
           </div>
+
         </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-10 border-t border-gray-700 pt-6 flex flex-col md:flex-row justify-between items-center text-sm">
-          <p className="text-gray-400">&copy; {currentYear} SpeakRight. All rights reserved.</p>
-          <div className="mt-4 md:mt-0 flex space-x-4">
-            <Link to="/privacy" className="hover:text-white transition">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-white transition">Terms of Service</Link>
-          </div>
+        {/* BOTTOM */}
+        <div className="border-t border-white/10 mt-14 pt-8 text-center text-gray-400">
+
+          © 2026 SpeakRight AI.
+          All rights reserved.
+
         </div>
+
       </div>
+
     </footer>
   );
 };

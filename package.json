@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "concurrently": "^9.2.1",
+    "framer-motion": "^12.38.0",
     "openai": "^6.34.0"
   }
 }
